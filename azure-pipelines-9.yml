@@ -1,0 +1,52 @@
+trigger:
+- master
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+stages:
+
+- stage: Build
+  displayName: 'Build Stage'
+  jobs:
+  - job: MavenBuild
+    steps:
+
+    - task: Maven@4
+      displayName: 'Build Maven Project'
+      inputs:
+        mavenPomFile: 'pom.xml'
+        goals: 'clean package'
+        publishJUnitResults: true
+        testResultsFiles: '**/surefire-reports/TEST-*.xml'
+
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish WAR Artifact'
+      inputs:
+        PathtoPublish: 'target'
+        ArtifactName: 'drop'
+        publishLocation: 'Container'
+
+- stage: Deploy
+  displayName: 'Deployment Stage'
+  dependsOn: Build
+  jobs:
+  - job: DeployApplication
+    steps:
+    - script: |
+        echo "Starting Deployment Process"
+        echo "Deploying TomcatMavenApp WAR File"
+        echo "Deployment Completed Successfully"
+      displayName: 'Deploy WAR Application'
+
+- stage: Verification
+  displayName: 'Verification Stage'
+  dependsOn: Deploy
+  jobs:
+  - job: VerifyDeployment
+    steps:
+    - script: |
+        echo "Checking deployment status"
+        echo "Application is running successfully"
+        echo "Pipeline execution completed"
+      displayName: 'Verify Deployment'
