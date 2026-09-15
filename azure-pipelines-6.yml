@@ -1,0 +1,36 @@
+trigger:
+- master
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+stages:
+
+- stage: Build
+  jobs:
+  - job: BuildJob
+    steps:
+
+    - task: UsePythonVersion@0
+      inputs:
+        versionSpec: '3.x'
+
+    - script: |
+        python -m pip install --upgrade pip
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+      displayName: 'Install Dependencies'
+
+    - script: |
+        python -m compileall .
+      displayName: 'Build Python Project'
+
+- stage: Deploy
+  dependsOn: Build
+  jobs:
+  - job: DeployJob
+    steps:
+    - script: |
+        echo "Starting Deployment"
+        echo "Deploying Python Application"
+        echo "Deployment Successful"
+      displayName: 'Deploy Application'
