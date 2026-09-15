@@ -1,0 +1,45 @@
+trigger:
+- master
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+stages:
+
+- stage: Build
+  jobs:
+  - job: Build
+    steps:
+    - script: |
+        echo "Starting Build"
+        mvn clean package -DskipTests
+        echo "Build Completed"
+      displayName: 'Build Maven Project'
+
+    - task: PublishBuildArtifacts@1
+      inputs:
+        PathtoPublish: 'target'
+        ArtifactName: 'drop'
+        publishLocation: 'Container'
+
+- stage: Deploy
+  dependsOn: Build
+  jobs:
+  - job: Deploy
+    steps:
+    - script: |
+        echo "Starting Deployment"
+        echo "Deploying TomcatMavenApp WAR File"
+        echo "Deployment Successful"
+      displayName: 'Deploy Application'
+
+- stage: Verification
+  dependsOn: Deploy
+  jobs:
+  - job: Verify
+    steps:
+    - script: |
+        echo "Checking deployment status"
+        echo "Application is running successfully"
+        echo "Pipeline execution completed"
+      displayName: 'Verify Deployment'
